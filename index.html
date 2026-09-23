@@ -2970,6 +2970,7 @@ renderCta();
 $("ctachips").addEventListener("click",e=>{
   const b=e.target.closest(".chip"); if(!b)return;
   state.ctaMode=b.dataset.cta; renderCta();
+  track("demo_toggle",{mode:state.ctaMode});
   if(!$("sr").classList.contains("hidden")) runMatch();  // re-render results if showing
 });
 // segment chips (optional, single-select toggle)
@@ -2980,6 +2981,7 @@ $("segchips").addEventListener("click",e=>{
   [...$("segchips").children].forEach(c=>c.classList.remove("sel"));
   if(!on){ b.classList.add("sel"); state.segment=b.dataset.seg; } else state.segment=null;
   $("segnote").classList.toggle("hidden", state.segment!=="large");
+  track("segment_selected",{segment:state.segment||"(cleared)"});
 });
 // persona chips (stubbed — shown only when PERSONA_UI is on)
 if(PERSONA_UI){
@@ -3000,6 +3002,7 @@ $("regionchips").addEventListener("click",e=>{
   [...$("regionchips").children].forEach(c=>c.classList.remove("sel"));
   if(!on){ b.classList.add("sel"); state.region=b.dataset.r; } else state.region=null;
   $("regionnote").classList.toggle("hidden", !state.region);
+  track("region_selected",{region:state.region||"(cleared)"});
 });
 // competitor chips
 $("compchips").innerHTML = COMPETITORS.map(c=>`<button class="chip" data-c="${c}">${c}</button>`).join("");
@@ -3008,8 +3011,10 @@ $("compchips").addEventListener("click",e=>{
   const on=b.classList.contains("sel");
   [...$("compchips").children].forEach(c=>c.classList.remove("sel"));
   if(!on){ b.classList.add("sel"); state.competitor=b.dataset.c; } else state.competitor=null;
+  track("competitor_selected",{competitor:state.competitor||"(cleared)"});
 });
 $("issue").addEventListener("input",e=>state.issue=e.target.value);
+$("issue").addEventListener("change",()=>{ if(state.issue&&state.issue.trim()) track("note_added"); });
 
 // nav
 function setStep(n){ [...$("stepbar").querySelectorAll(".step")].forEach(s=>{
