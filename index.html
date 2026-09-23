@@ -3141,7 +3141,7 @@ function bestCard(r){
     ? `<div class="sendrow"><span class="lbl">Send this:</span><span class="url" style="color:var(--amber)">${esc(linkPendingMsg(a))}</span></div>`
     : `<div class="sendrow"><span class="lbl">Send this:</span><span class="url">${esc(assetUrl(a))}</span>
          <button class="minibtn" data-copylink="${esc(assetUrl(a))}">Copy link</button>
-         <a class="minibtn solid" href="${esc(assetUrl(a))}" target="_blank" rel="noopener">Open</a></div>`;
+         <a class="minibtn solid" href="${esc(assetUrl(a))}" target="_blank" rel="noopener" data-openlink="${esc(a.id)}">Open</a></div>`;
   const third = a.third ? `<span class="src">Source: ${esc(a.source)} · Third-party: ${esc(a.third)}</span>`
                         : `<span class="src">Source: ${esc(a.source)}</span>`;
   const quoteBlock = a.quote
@@ -3203,7 +3203,7 @@ function matchedOn(r){
 function alsoCard(r,i){
   const a=r.a;
   const link = a.linkPending ? `<span style="color:var(--amber);font-size:13px">Link pending — manager review</span>`
-    : `<button class="minibtn" data-copylink="${esc(assetUrl(a))}">Copy link</button> <a class="minibtn" href="${esc(assetUrl(a))}" target="_blank" rel="noopener">Open</a>`;
+    : `<button class="minibtn" data-copylink="${esc(assetUrl(a))}">Copy link</button> <a class="minibtn" href="${esc(assetUrl(a))}" target="_blank" rel="noopener" data-openlink="${esc(a.id)}">Open</a>`;
   return `<details class="acard"><summary><span class="acardtop">${esc(a.title)} <span class="tag" style="margin-left:6px">${esc(a.type)}</span> <span class="tag">${a.trade==="All"?"All trades":esc(a.trade)}</span>${a.headlineStat?` <span class="tag" style="color:var(--blue);background:var(--chipbg)">${esc(a.headlineStat)}</span>`:""}</span><span class="acardprev">${esc(firstSentence(a.why))}</span></summary>
     ${matchedOn(r)}
     ${statLine(a)}
@@ -3272,6 +3272,7 @@ function noMatch(res){
 function wireResults(){
   // copy link buttons
   document.querySelectorAll("[data-copylink]").forEach(b=>b.onclick=()=>{track("copy_link",{best:_lastBest});copyText(b.dataset.copylink,b,"Link copied ✓");});
+  document.querySelectorAll("[data-openlink]").forEach(a=>a.addEventListener("click",()=>track("asset_opened",{asset:a.dataset.openlink})));
   // copy quote buttons
   document.querySelectorAll("[data-cq]").forEach(b=>b.onclick=()=>{track("copy_quote",{best:_lastBest});copyText(b.dataset.cq,b,"Quote copied ✓");});
   // follow-up tabs
