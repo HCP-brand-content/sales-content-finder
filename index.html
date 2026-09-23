@@ -3242,7 +3242,7 @@ function runMatch(){
     goStep(3); return;
   }
   _lastBest = res.best.a.id;
-  track("search", {result:"match", best:res.best.a.id, also:res.also.length, issue: state.issue?"1":"0"});
+  track("search", {result:"match", best:res.best.a.id, also:res.also.length, also_ids:res.also.map(r=>r.a.id).join("|"), issue: state.issue?"1":"0"});
   let html = bestCard(res.best);
   if(res.also.length){
     html += `<div class="also"><h3>Also consider</h3>` + res.also.map((r,i)=>alsoCard(r,i)).join("") + `</div>`;
