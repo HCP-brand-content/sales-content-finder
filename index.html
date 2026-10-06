@@ -2827,9 +2827,13 @@ function assetUrl(a){ return (state.ctaMode==="postdemo" && a.urlNoRep) ? a.urlN
 // Tracking token appended to every link a rep sends. Salesforce reports on this
 // string (it sits in the email body via the URL); GA4 reads it as the campaign.
 // Change TRACK_TOKEN in one place if Sales Ops picks a different token.
+// Shared cohort token + one 2-letter content code, kept to a single param so URLs
+// stay short. A catch-all SF filter on "SET26" matches all three; "SET26PR/SP/CN"
+// slices by bucket. Codes are fixed-length and non-prefixing so one bucket's search
+// never catches another. Bump the year suffix (SET27, etc.) for future cohorts.
 const TRACK_TOKEN="SET26";
-const TRACK_UTM="utm_campaign="+TRACK_TOKEN+"&utm_source=sales_content_finder";
-function taggedUrl(a){ const u=assetUrl(a); if(!u) return u; return u+(u.indexOf("?")>=0?"&":"?")+TRACK_UTM; }
+function trackBucket(a){ const t=(a.type||"").toLowerCase(); if(t==="press") return "PR"; if(t==="case study") return "SP"; return "CN"; }
+function taggedUrl(a){ const u=assetUrl(a); if(!u) return u; return u+(u.indexOf("?")>=0?"&":"?")+"utm_campaign="+TRACK_TOKEN+trackBucket(a); }
 // Swap the [link] token in a message for the real, tracking-tagged URL (or a note if pending).
 function linkFill(txt,a){ if(!txt) return txt; const v=a.linkPending?"(link still in review — send the message for now)":taggedUrl(a);
   return txt.replace(/\[link\]/g,v); }
