@@ -2637,7 +2637,7 @@ function segBuckets(seg){
 
 // Region (optional). No Canada content yet, so it's a soft, non-disruptive
 // filter: untagged assets read as "any" and Canada selection never hides them.
-const REGIONS = [{id:"west",label:"West"},{id:"southwest",label:"Southwest"},{id:"midwest",label:"Midwest"},{id:"southeast",label:"Southeast"},{id:"northeast",label:"Northeast"},{id:"canada",label:"Canada"}];
+const REGIONS = [{id:"west",label:"West"},{id:"southwest",label:"Southwest"},{id:"midwest",label:"Midwest"},{id:"southeast",label:"Southeast"},{id:"northeast",label:"Northeast"},{id:"canada",label:"Canada",pending:true}];
 const REGION_IDS = REGIONS.map(r=>r.id);
 function regionBuckets(r){
   const s=(r||"").toLowerCase().trim();
@@ -2949,9 +2949,9 @@ if(PERSONA_UI){
   });
 }
 // region chips (optional, single-select toggle)
-$("regionchips").innerHTML = REGIONS.map(x=>`<button class="chip" data-r="${x.id}">${x.label}</button>`).join("");
+$("regionchips").innerHTML = REGIONS.map(x=>`<button class="chip${x.pending?' pending':''}" data-r="${x.id}"${x.pending?' disabled title="Content coming soon"':''}>${x.label}${x.pending?' (content pending)':''}</button>`).join("");
 $("regionchips").addEventListener("click",e=>{
-  const b=e.target.closest(".chip"); if(!b)return;
+  const b=e.target.closest(".chip"); if(!b||b.disabled||b.classList.contains("pending"))return;
   const on=b.classList.contains("sel");
   [...$("regionchips").children].forEach(c=>c.classList.remove("sel"));
   if(!on){ b.classList.add("sel"); state.region=b.dataset.r; } else state.region=null;
