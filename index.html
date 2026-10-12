@@ -3315,7 +3315,7 @@ function bestCard(r){
     ${statLine(a)}
     <p class="why"><b>Why this fits:</b> ${esc(firstSentence(a.why))}</p>
     ${kfBlock(a)}
-    ${(a.type!=="Case study"&&a.type!=="One-pager")?`<div class="proof">${esc(a.proof)}${third}</div>`:""}
+    ${(a.type!=="Case study"&&a.type!=="One-pager"&&a.type!=="Testimonial")?`<div class="proof">${esc(a.proof)}${third}</div>`:""}
     ${send}
     ${followupBlock(a,"best")}
     ${quoteBlock}
@@ -3367,7 +3367,7 @@ function alsoCard(r,i){
     <p class="why" style="margin-top:10px"><b>Why:</b> ${esc(firstSentence(a.why))}</p>
     ${useWhenBlock(a)}
     ${kfBlock(a)}
-    ${(a.type!=="Case study"&&a.type!=="One-pager")?`<div class="proof">${esc(a.proof)}</div>`:""}
+    ${(a.type!=="Case study"&&a.type!=="One-pager"&&a.type!=="Testimonial")?`<div class="proof">${esc(a.proof)}</div>`:""}
     <div class="sendrow"><span class="lbl">Send this:</span><span class="url">${a.linkPending?'—':esc(taggedUrl(a))}</span>${link}</div>
     ${followupBlock(a,"also"+i)}
     ${a.quote?`<div class="quotebox">“${esc(a.quote)}”<div class="qfoot"><span class="qby">— ${esc(a.quoteBy)}</span><button class="minibtn" data-cq="${esc(a.quote)} — ${esc(a.quoteBy)}">Copy quote</button></div></div>`:""}
