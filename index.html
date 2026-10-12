@@ -75,6 +75,8 @@ h1{font-size:30px;margin:6px 0 4px;text-align:center;color:var(--navy)}
 input[type=text]{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#fff}
 input[type=text]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(23,99,230,.12)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
+.qsep{height:1px;background:var(--line);margin:30px 0 4px}
+.qsep-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:14px 0 2px}
 .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:14px;color:var(--ink)}
 .chip.pending{opacity:.55;cursor:not-allowed;background:#f4f6f9;color:var(--mut);border-style:dashed;font-weight:500}
 .chip.pending:hover{background:#f4f6f9}
@@ -90,7 +92,7 @@ input[type=text]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3p
 .matched{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:24px 0 8px;color:var(--mut);font-size:13px;font-weight:600}
 .mchip{background:var(--chipbg);color:var(--navy);border-radius:16px;padding:4px 12px;font-weight:600}
 .toolbar{display:flex;gap:14px;justify-content:flex-end;align-items:center;flex-wrap:wrap;margin-bottom:8px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin:14px 0;box-shadow:0 1px 3px rgba(11,36,64,.05)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin:14px 0;box-shadow:0 1px 3px rgba(11,36,64,.05)}
 .card.best{border-color:var(--blue);box-shadow:0 4px 20px rgba(23,99,230,.10)}
 .rank{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
 .rank .star{color:#f0a500}
@@ -124,7 +126,7 @@ input[type=text]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3p
 .play ul{margin:0;padding-left:20px;color:#33465e;font-size:13px;line-height:1.6}
 .playsnote{font-size:12px;color:var(--mut);margin:2px 0 12px}
 .matchon b{color:#33465e;font-weight:700}
-.proof{background:#f7f9fc;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:8px;padding:11px 13px;font-size:14px;color:#33465e;margin:0 0 14px}
+.proof{background:#f7f9fc;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:8px;padding:13px 15px;font-size:14px;color:#33465e;margin:0 0 16px}
 .proof .src{display:block;color:var(--mut);font-size:12px;margin-top:5px}
 .proofhint{font-size:12.5px;color:var(--mut);margin:-4px 0 14px;padding-left:2px}
 .statline{display:flex;align-items:baseline;gap:9px;margin:0 0 14px}
@@ -137,13 +139,13 @@ input[type=text]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3p
 .usewhen .ul{display:block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
 .usewhen .uv{font-size:13.5px;line-height:1.5;color:#243b57}
 .quotebox{background:#fff;border:1px solid var(--line);border-left:3px solid var(--navy);border-radius:8px;
-  padding:12px 14px;margin:20px 0 6px;font-size:15px;line-height:1.5;color:#1f3350;font-style:italic}
+  padding:14px 16px;margin:22px 0 6px;font-size:15px;line-height:1.55;color:#1f3350;font-style:italic}
 .qfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
 .qby{font-style:normal;font-weight:700;color:var(--navy);font-size:13px}
 .flag{display:flex;gap:8px;align-items:flex-start;background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);
   border-radius:8px;padding:9px 12px;font-size:13px;font-weight:600;margin:0 0 14px}
 .flag.soft{background:#eef3fd;border-color:#d3e0f7;color:#345}
-.sendrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f7f9fc;border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin:0 0 14px}
+.sendrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f7f9fc;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:0 0 16px}
 .sendrow .lbl{font-weight:700;color:var(--navy);font-size:13px}
 .sendrow .url{color:var(--blue);font-size:13px;word-break:break-all;flex:1;min-width:120px}
 .minibtn{border:1px solid var(--blue);color:var(--blue);background:#fff;border-radius:18px;padding:6px 14px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
@@ -155,9 +157,9 @@ input[type=text]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3p
 .fu .tabs{display:flex;gap:6px;margin-bottom:8px}
 .tab{border:1px solid var(--line);background:#fff;border-radius:16px;padding:5px 13px;font-size:13px;font-weight:600;cursor:pointer;color:var(--mut)}
 .tab.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-.futext{background:#fbfcfe;border:1px solid var(--line);border-radius:8px;padding:13px 15px;font-size:14.5px;line-height:1.55;white-space:pre-wrap;color:#24374f}
+.futext{background:#fbfcfe;border:1px solid var(--line);border-radius:8px;padding:16px 18px;font-size:14.5px;line-height:1.6;white-space:pre-wrap;color:#24374f}
 .fusub{font-weight:700;color:var(--navy);margin-bottom:4px;display:block}
-.fuhead{display:flex;justify-content:space-between;align-items:center;margin:14px 0 6px}
+.fuhead{display:flex;justify-content:space-between;align-items:center;margin:22px 0 10px}
 .fuhead .lbl{font-weight:700;color:var(--navy);font-size:14px}
 .also h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:26px 0 6px}
 .acard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:10px 0}
@@ -223,7 +225,7 @@ details.acard[open]>summary::after{content:"Hide details ▴"}
   <section id="s2" class="hidden">
     <div class="eyebrow">Step 2 of 2</div>
     <h1>What's the prospect looking for?</h1>
-    <p class="lede">Pick the closest fit and hit Find. Add detail below only if you want to sharpen the match.</p>
+    <p class="lede">Pick what fits your prospect best and click Find. Add details below to tailor the content to your Pro.</p>
 
     <div class="chips" id="needchips"></div>
 
@@ -231,6 +233,9 @@ details.acard[open]>summary::after{content:"Hide details ▴"}
       <div class="label">Which competitor came up? <span class="optlabel">optional</span></div>
       <div class="chips" id="compchips"></div>
     </div>
+
+    <div class="qsep"></div>
+    <div class="qsep-lbl">Optional details</div>
 
     <div class="label">What stage is the Pro in?</div>
     <div class="chips" id="ctachips"></div>
