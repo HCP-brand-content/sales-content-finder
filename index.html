@@ -250,7 +250,7 @@ details.acard[open]>summary::after{content:"Hide details ▴"}
       <div class="refine-body">
         <div class="label">Where are they based?</div>
         <div class="chips" id="regionchips"></div>
-        <p class="fieldnote hidden" id="regionnote">U.S. case studies are mapped by region, so a pick surfaces nearby proof. Canada-specific examples are still being developed.</p>
+        <p class="fieldnote hidden" id="regionnote">Content is mapped by region, so a pick surfaces nearby proof. Canadian Pros now have their own content too.</p>
 
         <div id="personawrap" class="hidden">
           <div class="label">Contact's role <span class="optlabel">optional</span></div>
@@ -2798,6 +2798,39 @@ const DATA = [
     "status": "Approved",
     "region": "",
     "maintainer_note": "Pro testimonial provided by Emma (Oct 2026)"
+  },
+  {
+    "id": "onepager_canada",
+    "title": "Canadian Pros one-pager",
+    "url": "https://content.housecallpro.com/49be0b12-28ce-46af-889a-2364dff79248",
+    "urlNoRep": "https://content.housecallpro.com/ad64c701-7f75-483b-8ee4-ef8438715991",
+    "type": "One-pager",
+    "need": [
+      "proof"
+    ],
+    "trade": "All",
+    "segment": "All",
+    "competitor": "",
+    "region": "canada",
+    "moment": "Canadian prospect wants proof from other Canadian Pros",
+    "triggers": "canada; canadian; ontario; bc; british columbia; quebec; alberta; manitoba; proof; other canadian pros; location; local proof",
+    "why": "The only Canadian proof in the set: four Canadian Pros (Victoria BC, Fergus and Guelph ON, and a 36-location handyman operation) on running their business with Housecall Pro. Use it when location matters.",
+    "useWhen": "Canadian prospect who wants to hear from other Canadian Pros, or any time location is part of the conversation.",
+    "proof": "Four Canadian Pros (David Audy in Victoria BC, Josh Rooney in Fergus ON, Asif Bakhsh in Guelph ON, and Colin Sprake's 36-location handyman operation) on running on Housecall Pro.",
+    "headlineStat": "",
+    "statLabel": "",
+    "keyFeatures": [],
+    "quote": "",
+    "quoteBy": "",
+    "source": "",
+    "third": "",
+    "subject": "Hear from other Canadian Pros",
+    "email": "Hi [First name],\n\nThought you'd want to hear from a few Pros closer to home. Four Canadian shops, from Victoria to Ontario, on what running on Housecall Pro has done for them. David Audy at Absolutely Electrical in BC put it simply: \"Housecall Pro has bought me back time. And there's nothing more valuable than time as a business owner.\"\n\nRead all four in their own words:\n[link]\n\n[[CTA]]\n\nBest,\n[Your name]",
+    "sms": "Hey [First name], thought you'd want to hear from a few Pros closer to home. Four Canadian shops on running with Housecall Pro: [link]. [[CTA_SMS]]",
+    "cta": "Offer a quick walk-through for their shop.",
+    "priority": "High",
+    "status": "Approved",
+    "regionLock": true
   }
 ];
 
@@ -2845,7 +2878,7 @@ function segBuckets(seg){
 
 // Region (optional). No Canada content yet, so it's a soft, non-disruptive
 // filter: untagged assets read as "any" and Canada selection never hides them.
-const REGIONS = [{id:"west",label:"West"},{id:"southwest",label:"Southwest"},{id:"midwest",label:"Midwest"},{id:"southeast",label:"Southeast"},{id:"northeast",label:"Northeast"},{id:"canada",label:"Canada",pending:true}];
+const REGIONS = [{id:"west",label:"West"},{id:"southwest",label:"Southwest"},{id:"midwest",label:"Midwest"},{id:"southeast",label:"Southeast"},{id:"northeast",label:"Northeast"},{id:"canada",label:"Canada"}];
 const REGION_IDS = REGIONS.map(r=>r.id);
 function regionBuckets(r){
   const s=(r||"").toLowerCase().trim();
@@ -2942,7 +2975,7 @@ function scoreAsset(a, inp){
   if(inp.region){
     const rb=regionBuckets(a.region);
     if(rb.includes("any")) s+=2;
-    else if(rb.includes(inp.region)){ s+=8; reasons.push("region"); }
+    else if(rb.includes(inp.region)){ s+=16; reasons.push("region"); }
     else s-=4;
   }
   // mechanical vs non-mechanical: demote mechanical-only proof for a
@@ -2992,7 +3025,10 @@ function match(inp){
   const cq=((inp.competitor||"")+" "+(inp.issue||"")).toLowerCase();
   const blocked=a=>{const ac=(a.competitor||"").toLowerCase();
     if(ac.includes("servicetitan") && !/servicetitan|service titan/.test(cq)) return true;
-    if(ac.includes("jobber") && !/jobber/.test(cq)) return true; return false;};
+    if(ac.includes("jobber") && !/jobber/.test(cq)) return true;
+    // Region-locked assets (e.g. Canadian proof) only surface when that region is picked.
+    if(a.regionLock && (inp.region||"")!==(a.region||"")) return true;
+    return false;};
   const scored = DATA.filter(a=>!blocked(a)).map(a=>({a, ...scoreAsset(a,inp)}));
   // Collapse multi-angle assets: keep the single best-matching variant
   // per `group` so a bundle one-pager shows once, with the right angle.
@@ -3028,7 +3064,7 @@ const state={trade:null, need:null, competitor:null, segment:null, region:null, 
 // CTA versions for one-pagers that ship in two variants (pre-demo vs post-demo).
 const CTA_TEXT={
   demo:    {full:"Want to see it in action? Book a demo or start a free trial.", sms:"Want to see it live?"},
-  postdemo:{full:"Reach out to your rep whenever you're ready and we'll get you started.", sms:"Reach out to your rep to get started."}
+  postdemo:{full:"Reach out and I'll get you set up.", sms:"Reach out and I'll get you set up."}
 };
 // Serve the right PDF for the current demo stage (falls back to the single version).
 function assetUrl(a){ return (state.ctaMode==="postdemo" && a.urlNoRep) ? a.urlNoRep : a.url; }
