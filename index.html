@@ -3049,7 +3049,13 @@ function match(inp){
   // one-pager rather than 3 case studies).
   const typeCount={[top.a.type]:1};
   const also=[];
-  for(const r of ranked.slice(1)){
+  // When a specific trade is picked, lead the backups with same-trade content
+  // so the rep always has trade-relevant options, even if the best match (need-first)
+  // came from another trade.
+  const selT = (inp.trade && inp.trade!=="any" && inp.trade!=="any_mech") ? inp.trade : null;
+  let rest = ranked.slice(1);
+  if(selT) rest = rest.filter(r=>r.a.trade===selT).concat(rest.filter(r=>r.a.trade!==selT));
+  for(const r of rest){
     if(also.length>=2 || r.score<SECOND) break;
     if((typeCount[r.a.type]||0) >= 2) continue;
     also.push(r); typeCount[r.a.type]=(typeCount[r.a.type]||0)+1;
@@ -3347,12 +3353,15 @@ function bestCard(r){
     ? `<div class="quotebox">“${esc(a.quote)}”<div class="qfoot"><span class="qby">— ${esc(a.quoteBy)}</span><button class="minibtn" data-cq="${esc(a.quote)} — ${esc(a.quoteBy)}">Copy quote</button></div></div>` : "";
   const quoteHint = (a.quote || a.proofUse)
     ? `<div class="proofhint">${a.quote?"Confirm this quote is current in the Social Proof Hub (Testimonial Validator) before sending.":"Need the verbatim quote? Pull it from the Social Proof Hub with the Testimonial Validator."}</div>` : "";
+  const crossNote = (state.trade && state.trade!=="any" && state.trade!=="any_mech" && a.trade!==state.trade && a.trade!=="All")
+    ? `<div class="flag soft">Note: we don't have ${esc(state.trade)}-specific content for this situation yet, so this is the closest match from another trade. Trade-specific options are below if you'd rather send one.</div>` : "";
   return `<div class="card best">
     <div class="rank">${ic('star',14)} Best match</div>
     ${matchedOn(r)}
     <div class="atitle">${esc(a.title)}</div>
     <div class="tags"><span class="tag"><span class="tk">Type</span>${esc(a.type)}</span><span class="tag"><span class="tk">Trade</span>${a.trade==="All"?"All trades":esc(a.trade)}</span>
       ${a.segment?`<span class="tag"><span class="tk">Size</span>${esc(a.segment)}</span>`:""}</div>
+    ${crossNote}
     ${statLine(a)}
     <p class="why"><b>Why this fits:</b> ${esc(firstSentence(a.why))}</p>
     ${kfBlock(a)}
