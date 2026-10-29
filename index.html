@@ -94,6 +94,25 @@ input[type=text]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3p
 .toolbar{display:flex;gap:14px;justify-content:flex-end;align-items:center;flex-wrap:wrap;margin-bottom:8px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin:14px 0;box-shadow:0 1px 3px rgba(11,36,64,.05)}
 .card.best{border-color:var(--blue);box-shadow:0 4px 20px rgba(23,99,230,.10)}
+.card.pick{border-top:3px solid var(--line);margin-bottom:18px}
+.card.pick.trade{border-top-color:var(--amber-border)}
+.card.pick.situation{border-top-color:var(--blue)}
+.card.pick .atitle{margin-bottom:12px}
+.card.pick .tags{margin-bottom:18px}
+.card.pick .statline{margin-bottom:18px}
+.card.pick .why{margin-bottom:10px}
+.card.pick .flag.soft{margin:14px 0 0}
+.duohead{font-weight:700;color:var(--navy);font-size:14px;margin:0 0 14px}
+.mlabel{display:inline-flex;align-items:center;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:4px 11px;border-radius:20px;margin-bottom:11px}
+.mlabel.situation{background:var(--chipbg);color:var(--blue)}
+.mlabel.trade{background:var(--amber-bg);color:var(--amber)}
+.gennote{font-size:12.5px;color:var(--mut);font-weight:600;margin:0 0 12px}
+.fuexp{margin-top:8px}
+.fuexp>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;font-weight:700;color:#fff;font-size:13px;border:1px solid var(--blue);border-radius:20px;padding:9px 18px;background:var(--blue);margin-top:4px}
+.fuexp>summary:hover{background:var(--blue-d);border-color:var(--blue-d)}
+.fuexp>summary::-webkit-details-marker{display:none}
+.fuexp>summary::after{content:" ▾";font-size:11px;margin-left:5px}
+.fuexp[open]>summary::after{content:" ▴"}
 .rank{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
 .rank .star{color:#f0a500}
 .atitle{font-size:21px;font-weight:800;color:var(--navy);margin:2px 0 8px;line-height:1.25}
@@ -551,7 +570,7 @@ const DATA = [
     "competitor": "Generic FSM",
     "moment": "Revenue plateau / coming off an unreliable CRM",
     "triggers": "stuck below $1M; plateaued; can't break a million; unreliable CRM; app keeps crashing; family business going pro; scaling HVAC",
-    "why": "The most dramatic HVAC growth story in the set: stuck at $800K on a crashing CRM, then switched to Housecall Pro and now forecasting $6M.",
+    "why": "A Texas HVAC shop that was stuck at $800K on a CRM that kept crashing, then switched to Housecall Pro and now forecasts $6M.",
     "proof": "Frontier was stuck below $1M for years; after switching to HCP the revenue forecast is $6M, and one automated follow-up email recovered a $39K install.",
     "quote": "Housecall Pro is moving faster than we are. It's always prepared to do what we need it to do.",
     "quoteBy": "Jay Villegas, Frontier Air Conditioning",
@@ -3047,20 +3066,25 @@ function match(inp){
   // Fill the two "also" slots but cap any single content type at 2 across the
   // shown set, so results always have format variety (e.g. 2 case studies + a
   // one-pager rather than 3 case studies).
-  const typeCount={[top.a.type]:1};
-  const also=[];
-  // When a specific trade is picked, lead the backups with same-trade content
-  // so the rep always has trade-relevant options, even if the best match (need-first)
-  // came from another trade.
   const selT = (inp.trade && inp.trade!=="any" && inp.trade!=="any_mech") ? inp.trade : null;
-  let rest = ranked.slice(1);
+  // When the top (situation) pick is from another trade, surface the best same-trade
+  // asset as a co-equal "Best in your trade" pick alongside it.
+  const crossTrade = !!(selT && top.a.trade!==selT && top.a.trade!=="All");
+  let tradePick = null;
+  if(crossTrade) tradePick = ranked.find(r=> r!==top && r.a.trade===selT && r.score>=SECOND) || null;
+  // Fill the two "also" slots (excluding the two picks), lead with same-trade,
+  // cap any single content type at 2 for format variety.
+  const typeCount={[top.a.type]:1};
+  if(tradePick) typeCount[tradePick.a.type]=(typeCount[tradePick.a.type]||0)+1;
+  const also=[];
+  let rest = ranked.filter(r=> r!==top && r!==tradePick);
   if(selT) rest = rest.filter(r=>r.a.trade===selT).concat(rest.filter(r=>r.a.trade!==selT));
   for(const r of rest){
     if(also.length>=2 || r.score<SECOND) break;
     if((typeCount[r.a.type]||0) >= 2) continue;
     also.push(r); typeCount[r.a.type]=(typeCount[r.a.type]||0)+1;
   }
-  return {best:top, also, ranked};
+  return {best:top, tradePick, crossTrade: !!(crossTrade && tradePick), also, ranked};
 }
 
 /* ============================================================
@@ -3343,7 +3367,7 @@ function bestCard(r){
   const a=r.a;
   const send = a.linkPending
     ? `<div class="sendrow"><span class="lbl">Send this:</span><span class="url" style="color:var(--amber)">${esc(linkPendingMsg(a))}</span></div>`
-    : `<div class="sendrow"><span class="lbl">Send this:</span><span class="url">${esc(taggedUrl(a))}</span>
+    : `<div class="sendrow"><span class="lbl">Asset link:</span>
          <button class="minibtn" data-copylink="${esc(taggedUrl(a))}">Copy link</button>
          <a class="minibtn solid" href="${esc(assetUrl(a))}" target="_blank" rel="noopener" data-openlink="${esc(a.id)}">Open</a></div>`;
   const third = !a.source ? ``
@@ -3354,22 +3378,50 @@ function bestCard(r){
   const quoteHint = (a.quote || a.proofUse)
     ? `<div class="proofhint">${a.quote?"Confirm this quote is current in the Social Proof Hub (Testimonial Validator) before sending.":"Need the verbatim quote? Pull it from the Social Proof Hub with the Testimonial Validator."}</div>` : "";
   const crossNote = (state.trade && state.trade!=="any" && state.trade!=="any_mech" && a.trade!==state.trade && a.trade!=="All")
-    ? `<div class="flag soft">Note: we don't have ${esc(state.trade)}-specific content for this situation yet, so this is the closest match from another trade. Trade-specific options are below if you'd rather send one.</div>` : "";
+    ? `<div class="flag soft">Note: we don't have ${esc(state.trade)}-specific content for this yet, so this is the closest match from another trade.</div>` : "";
+  // All-trades asset for a specific trade: set expectation without alarm.
+  const generalNote = (state.trade && state.trade!=="any" && state.trade!=="any_mech" && a.trade==="All")
+    ? `<div class="flag soft"><b>Note:</b>&nbsp;This content works across different trades. We don't have ${/^[aeiou]/i.test(state.trade)||/^hvac/i.test(state.trade)?"an":"a"} ${esc(state.trade)}-specific version yet.</div>` : "";
   return `<div class="card best">
     <div class="rank">${ic('star',14)} Best match</div>
-    ${matchedOn(r)}
     <div class="atitle">${esc(a.title)}</div>
     <div class="tags"><span class="tag"><span class="tk">Type</span>${esc(a.type)}</span><span class="tag"><span class="tk">Trade</span>${a.trade==="All"?"All trades":esc(a.trade)}</span>
       ${a.segment?`<span class="tag"><span class="tk">Size</span>${esc(a.segment)}</span>`:""}</div>
     ${crossNote}
+    ${generalNote}
     ${statLine(a)}
     <p class="why"><b>Why this fits:</b> ${esc(firstSentence(a.why))}</p>
-    ${kfBlock(a)}
-    ${(a.type!=="Case study"&&a.type!=="One-pager"&&a.type!=="Testimonial")?`<div class="proof">${esc(a.proof)}${third}</div>`:""}
     ${send}
     ${followupBlock(a,"best")}
-    ${quoteBlock}
-    ${quoteHint}
+  </div>`;
+}
+// Co-equal pick card (trade pick + situation pick) — used when the best match
+// crosses trades. Even visual weight; email/text/link tucked behind an expand.
+function pickCard(r, kind){
+  const a=r.a;
+  const isSit = kind==='situation';
+  const label = isSit ? `<span class="mlabel situation">Best for their situation</span>`
+                      : `<span class="mlabel trade">Best for their trade</span>`;
+  const note = (isSit && state.trade && state.trade!=="any" && state.trade!=="any_mech" && a.trade!==state.trade && a.trade!=="All")
+    ? `<div class="flag soft">Note: no ${esc(state.trade)}-specific content for this situation yet, so this is the closest from another trade.</div>` : "";
+  const send = a.linkPending
+    ? `<div class="sendrow"><span class="lbl">Send this:</span><span class="url" style="color:var(--amber)">${esc(linkPendingMsg(a))}</span></div>`
+    : `<div class="sendrow"><span class="lbl">Asset link:</span>
+         <button class="minibtn" data-copylink="${esc(taggedUrl(a))}">Copy link</button>
+         <a class="minibtn solid" href="${esc(assetUrl(a))}" target="_blank" rel="noopener" data-openlink="${esc(a.id)}">Open</a></div>`;
+  const qb = a.quote?`<div class="quotebox">“${esc(a.quote)}”<div class="qfoot"><span class="qby">— ${esc(a.quoteBy)}</span><button class="minibtn" data-cq="${esc(a.quote)} — ${esc(a.quoteBy)}">Copy quote</button></div></div>`:"";
+  return `<div class="card pick ${kind}">
+    ${label}
+    <div class="atitle">${esc(a.title)}</div>
+    <div class="tags"><span class="tag"><span class="tk">Type</span>${esc(a.type)}</span><span class="tag"><span class="tk">Trade</span>${a.trade==="All"?"All trades":esc(a.trade)}</span>${a.segment?`<span class="tag"><span class="tk">Size</span>${esc(a.segment)}</span>`:""}</div>
+    ${statLine(a)}
+    <p class="why"><b>Why this fits:</b> ${esc(firstSentence(a.why))}</p>
+    ${note}
+    <details class="fuexp"><summary>See what to send</summary>
+      ${send}
+      ${followupBlock(a,kind)}
+      ${qb}
+    </details>
   </div>`;
 }
 function statLine(a){
@@ -3418,7 +3470,7 @@ function alsoCard(r,i){
     ${useWhenBlock(a)}
     ${kfBlock(a)}
     ${(a.type!=="Case study"&&a.type!=="One-pager"&&a.type!=="Testimonial")?`<div class="proof">${esc(a.proof)}</div>`:""}
-    <div class="sendrow"><span class="lbl">Send this:</span><span class="url">${a.linkPending?'—':esc(taggedUrl(a))}</span>${link}</div>
+    <div class="sendrow"><span class="lbl">Asset link:</span>${link}</div>
     ${followupBlock(a,"also"+i)}
     ${a.quote?`<div class="quotebox">“${esc(a.quote)}”<div class="qfoot"><span class="qby">— ${esc(a.quoteBy)}</span><button class="minibtn" data-cq="${esc(a.quote)} — ${esc(a.quoteBy)}">Copy quote</button></div></div>`:""}
   </details>`;
@@ -3449,10 +3501,20 @@ function runMatch(){
     goStep(3); return;
   }
   _lastBest = res.best.a.id;
-  track("search", {result:"match", best:res.best.a.id, also:res.also.length, also_ids:res.also.map(r=>r.a.id).join("|"), issue: state.issue?"1":"0"});
-  let html = bestCard(res.best);
-  if(res.also.length){
-    html += `<div class="also"><h3>Other options you can send — click any to expand</h3>` + res.also.map((r,i)=>alsoCard(r,i)).join("") + `</div>`;
+  track("search", {result:"match", best:res.best.a.id, trade_pick:res.tradePick?res.tradePick.a.id:"", also:res.also.length, also_ids:res.also.map(r=>r.a.id).join("|"), issue: state.issue?"1":"0"});
+  let html;
+  if(res.crossTrade && res.tradePick){
+    // Two co-equal picks: the rep's trade and the situation. Equal weight, stacked.
+    html = `<div class="duohead">Two options to choose from. Send whichever fits your conversation.</div>` + pickCard(res.tradePick,'trade') + pickCard(res.best,'situation');
+    if(res.also.length){
+      const allTrade = res.also.every(r=>r.a.trade===state.trade);
+      html += `<div class="also"><h3>${allTrade?"More in your trade":"More options you can send"}</h3>` + res.also.map((r,i)=>alsoCard(r,i)).join("") + `</div>`;
+    }
+  } else {
+    html = bestCard(res.best);
+    if(res.also.length){
+      html += `<div class="also"><h3>Other options you can send — click any to expand</h3>` + res.also.map((r,i)=>alsoCard(r,i)).join("") + `</div>`;
+    }
   }
   $("results").innerHTML = html;
   $("foot").innerHTML = `The content library is the source of truth for this tool. Add or edit assets there.`;
