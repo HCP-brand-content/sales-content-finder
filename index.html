@@ -3067,11 +3067,20 @@ function match(inp){
   // shown set, so results always have format variety (e.g. 2 case studies + a
   // one-pager rather than 3 case studies).
   const selT = (inp.trade && inp.trade!=="any" && inp.trade!=="any_mech") ? inp.trade : null;
-  // When the top (situation) pick is from another trade, surface the best same-trade
-  // asset as a co-equal "Best in your trade" pick alongside it.
-  const crossTrade = !!(selT && top.a.trade!==selT && top.a.trade!=="All");
+  // Two-card rule: when the best match is NOT in the rep's trade (another trade OR a
+  // generic All-trades piece), surface a co-equal same-trade pick — but ONLY if that
+  // same-trade asset actually fits what the prospect asked about, not just the trade.
+  // "Fits the ask" = it's tagged to the chosen need, OR (for competitor/proof asks,
+  // where peer proof IS the answer) it's an in-trade case study or testimonial.
+  // This is why a Landscaping growth/feature testimonial won't surface for an
+  // "off pen and paper" (operations) ask — it doesn't match that need.
+  const offTrade = !!(selT && top.a.trade!==selT);
+  const proofAsk = inp.need==="proof" || inp.need==="competitive";
+  const fitsAsk = r => r.reasons.includes("need")
+    || (proofAsk && (r.a.type==="Case study" || r.a.type==="Testimonial"));
   let tradePick = null;
-  if(crossTrade) tradePick = ranked.find(r=> r!==top && r.a.trade===selT && r.score>=SECOND) || null;
+  if(offTrade) tradePick = ranked.find(r=> r!==top && r.a.trade===selT && r.score>=SECOND && fitsAsk(r)) || null;
+  const crossTrade = offTrade;
   // Fill the two "also" slots (excluding the two picks), lead with same-trade,
   // cap any single content type at 2 for format variety.
   const typeCount={[top.a.type]:1};
@@ -3400,10 +3409,10 @@ function bestCard(r){
 function pickCard(r, kind){
   const a=r.a;
   const isSit = kind==='situation';
-  const label = isSit ? `<span class="mlabel situation">Best for their situation</span>`
-                      : `<span class="mlabel trade">Best for their trade</span>`;
+  const label = isSit ? `<span class="mlabel situation">Matched to their need</span>`
+                      : `<span class="mlabel trade">Matched to their trade</span>`;
   const note = (isSit && state.trade && state.trade!=="any" && state.trade!=="any_mech" && a.trade!==state.trade && a.trade!=="All")
-    ? `<div class="flag soft">Note: no ${esc(state.trade)}-specific content for this situation yet, so this is the closest from another trade.</div>` : "";
+    ? `<div class="flag soft">Note: no ${esc(state.trade)}-specific content for this need yet, so this is the closest from another trade.</div>` : "";
   const send = a.linkPending
     ? `<div class="sendrow"><span class="lbl">Send this:</span><span class="url" style="color:var(--amber)">${esc(linkPendingMsg(a))}</span></div>`
     : `<div class="sendrow"><span class="lbl">Asset link:</span>
