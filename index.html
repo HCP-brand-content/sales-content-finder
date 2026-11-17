@@ -3071,13 +3071,15 @@ function match(inp){
   // generic All-trades piece), surface a co-equal same-trade pick — but ONLY if that
   // same-trade asset actually fits what the prospect asked about, not just the trade.
   // "Fits the ask" = it's tagged to the chosen need, OR (for competitor/proof asks,
-  // where peer proof IS the answer) it's an in-trade case study or testimonial.
-  // This is why a Landscaping growth/feature testimonial won't surface for an
-  // "off pen and paper" (operations) ask — it doesn't match that need.
+  // where peer proof IS the answer) it's any in-trade proof piece: a case study, a
+  // testimonial, or a proof-tagged Pro Quotes one-pager. This is why a Landscaping
+  // growth/feature testimonial won't surface for an "off pen and paper" (operations)
+  // ask — it doesn't match that need.
   const offTrade = !!(selT && top.a.trade!==selT);
   const proofAsk = inp.need==="proof" || inp.need==="competitive";
+  const assetNeeds = a => Array.isArray(a.need) ? a.need : [a.need];
   const fitsAsk = r => r.reasons.includes("need")
-    || (proofAsk && (r.a.type==="Case study" || r.a.type==="Testimonial"));
+    || (proofAsk && (r.a.type==="Case study" || r.a.type==="Testimonial" || assetNeeds(r.a).includes("proof")));
   let tradePick = null;
   if(offTrade) tradePick = ranked.find(r=> r!==top && r.a.trade===selT && r.score>=SECOND && fitsAsk(r)) || null;
   const crossTrade = offTrade;
