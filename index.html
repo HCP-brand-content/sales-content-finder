@@ -340,7 +340,32 @@ details.acard[open]>summary::after{content:"Hide details ▴"}
      "link pending" note instead of a broken link.
    Matching + UI below never change — just edit this list.
    ============================================================ */
-const DATA = [
+const DATA_FALLBACK = [
+  {
+    "id": "press_aijournal_purposebuilt_ai",
+    "title": "The AI Journal: What the trades tell us about the next phase of AI",
+    "url": "https://aijourn.com/what-the-trades-tell-us-about-the-next-phase-of-ai-adoption/",
+    "type": "Press",
+    "need": ["press", "ai"],
+    "trade": "All",
+    "segment": "All",
+    "competitor": "",
+    "moment": "AI relevance / purpose-built AI, esp. Mechanical Package",
+    "triggers": "the ai journal; roland ligtenberg; purpose-built AI; AI built for the trades; general AI vs purpose-built; is AI worth it; mechanical package; AI credibility; third party proof; falling behind on AI",
+    "why": "A byline from HCP co-founder and Chief AI Officer Roland Ligtenberg making the case for purpose-built AI over general tools. Outside-outlet credibility on AI that maps straight to the Mechanical Package story.",
+    "proof": "The AI Journal byline by Roland Ligtenberg (HCP Co-Founder and Chief AI Officer) on purpose-built AI for the trades, drawing on HCP's 2026 AI in the Trades survey (Nov 2026).",
+    "source": "The AI Journal",
+    "third": "",
+    "email": "Hi [First name],\n\nSince AI came up, our co-founder and Chief AI Officer, Roland Ligtenberg, wrote a piece in The AI Journal on where AI is headed for the trades. The short version: general AI can do a little of everything, but AI built for your trade knows a no-cool call in July is urgent, can price the job accurately, and assign the right tech.\n\nIt pulls from our 2026 survey of home service Pros. A couple that stood out: 48% are already using AI on the job, and among those who aren't, more than half say they just aren't familiar with tools built for the trades.\n\nHere it is:\n[link]\n\nHappy to walk through how this maps to your shop.\n\nBest,\n[Your name]",
+    "cta": "Share as outside validation on purpose-built AI, then book the AI walkthrough.",
+    "priority": "High",
+    "status": "Approved",
+    "subject": "AI built for the trades, not just any AI",
+    "useWhen": "AI-curious or purpose-built-skeptical prospect, especially a Mechanical Package conversation (the piece runs on HVAC examples). Contributed byline by our own Chief AI Officer, not independent coverage, so lean on the outlet name plus Roland's title, not 'The AI Journal covered us.' Survey stats are HCP's own 2026 AI in the Trades report.",
+    "sms": "Hey [First name], since AI came up: our Chief AI Officer wrote a piece in The AI Journal on why AI built for the trades beats general-purpose AI, backed by our 2026 Pro survey (48% of Pros already use AI on the job): [link]. Worth two minutes.",
+    "headlineStat": "48%",
+    "statLabel": "of Pros use AI on the job (2026 survey)"
+  },
   {
     "id": "competitor_switch_hvac",
     "title": "Champion Heating & Air case study",
@@ -2853,6 +2878,64 @@ const DATA = [
   }
 ];
 
+/* ============================================================
+   LIVE CONTENT SOURCE — reads the published Google Sheet (CSV)
+   so the content team can edit copy/assets without code changes.
+   Falls back to the embedded DATA_FALLBACK above if the sheet
+   can't be reached. The footer shows which source is in use.
+   ============================================================ */
+let DATA = DATA_FALLBACK.slice();
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTo3kFk_fGMrx6glCq7F3AaL_bm0UPXyuIy9VKZabuzzEXMlkeDm7cAi2rsIfn3zkyUoqMFINGgW-tP/pub?output=csv";
+const _BOOL_FIELDS = new Set(["isDefault","linkPending","proofPending","regionLock","ctaToggle"]);
+function _parseCSV(text){
+  const rows=[]; let row=[], cur="", i=0, inQ=false;
+  while(i<text.length){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){cur+='"'; i+=2; continue;} inQ=false; i++; continue; }
+      cur+=c; i++; continue;
+    }
+    if(c==='"'){ inQ=true; i++; continue; }
+    if(c===','){ row.push(cur); cur=""; i++; continue; }
+    if(c==='\r'){ i++; continue; }
+    if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=""; i++; continue; }
+    cur+=c; i++;
+  }
+  if(cur.length||row.length){ row.push(cur); rows.push(row); }
+  return rows;
+}
+function _rowsToAssets(rows){
+  if(!rows.length) return [];
+  const header=rows[0].map(h=>String(h).trim());
+  const out=[];
+  for(let r=1;r<rows.length;r++){
+    const cells=rows[r];
+    if(!cells || cells.every(c=>String(c).trim()==="")) continue;
+    const o={};
+    header.forEach((k,idx)=>{
+      let v=cells[idx]!==undefined?cells[idx]:"";
+      if(k==="need") o[k]=String(v).split(",").map(s=>s.trim()).filter(Boolean);
+      else if(k==="keyFeatures") o[k]=String(v).split(", ").map(s=>s.trim()).filter(Boolean);
+      else if(_BOOL_FIELDS.has(k)) o[k]=String(v).trim().toUpperCase()==="TRUE";
+      else o[k]=v;
+    });
+    if(o.id) out.push(o);
+  }
+  return out;
+}
+function _setSrcNote(t){ const n=document.getElementById("srcnote"); if(n) n.textContent=t; }
+(function loadLiveContent(){
+  fetch(SHEET_CSV_URL,{cache:"no-store"})
+    .then(r=>{ if(!r.ok) throw new Error("http "+r.status); return r.text(); })
+    .then(txt=>{
+      const assets=_rowsToAssets(_parseCSV(txt));
+      if(assets.length < 20) throw new Error("too few rows ("+assets.length+")");
+      DATA=assets;
+      _setSrcNote("Content: live sheet · "+assets.length+" assets · loaded ✓");
+    })
+    .catch(()=>{ _setSrcNote("Content: built-in backup · "+DATA.length+" assets"); });
+})();
+
 /* Taxonomy for the intake UI */
 const NEEDS = [
   {id:"competitive", label:"Comparing us to a competitor"},
@@ -3566,5 +3649,6 @@ function wireResults(){
   });
 }
 </script>
+<p id="srcnote" style="text-align:center;color:#8795a6;font-size:11px;margin:18px 0 28px;opacity:.8"></p>
 </body>
 </html>
